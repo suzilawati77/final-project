@@ -8,6 +8,7 @@ import 'theme.dart';
 import 'widgets/programme_card.dart'; // guna semula CategoryPill
 import 'screens/home_screen.dart';
 import 'screens/programme_grid_screen.dart';
+import 'screens/programme_detail_screen.dart';
 
 void main() {
   runApp(const LabHari1App());
@@ -19,12 +20,20 @@ class LabHari1App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Lab Hari 1-2',
+      title: 'eTT Mobile — Latihan',
       debugShowCheckedModeBanner: false,
-      theme: KptTheme.light,      // tema navy + emas
-      //home: const ProgrammeGridScreen()
-      home: const HomeScreen()
-         // skrin kekal aplikasi
+      theme: KptTheme.light,
+      home: const HomeScreen(),
+      // 👈 2.1 — TAMBAH onGenerateRoute SELEPAS BARIS INI
+      onGenerateRoute: (settings) {
+        if (settings.name == '/detail') {
+          final programme = settings.arguments as Programme;
+          return MaterialPageRoute(
+            builder: (_) => ProgrammeDetailScreen(programme: programme),
+          );
+        }
+        return null; // laluan tidak dikenali
+      },
     );
   }
 }
@@ -76,6 +85,7 @@ class ProgrammeInfoCard extends StatelessWidget {
     );
   }
 }
+
 // ── 5.1 — Rangka StatefulWidget ───────────────────────
 class SavedProgrammeCounter extends StatefulWidget {
   const SavedProgrammeCounter({super.key});
@@ -109,7 +119,7 @@ class ProgrammeSummaryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16),
-            child: Row(
+      child: Row(
         children: [
           Expanded(
             child: Text(
