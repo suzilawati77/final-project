@@ -48,17 +48,17 @@ class _LabHari4ScreenState extends State<LabHari4Screen> {
       fieldOfStudy: 'Perubatan (Medicine)',
       universityChoiceIds: const ['ETT-001'],
     );
-    
+
     final berjaya = await _service.submitApplication(contoh);
-    
+
     if (!mounted) return;
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           berjaya
               ? 'Permohonan contoh berjaya dihantar'
-              : 'Gagal hantar permohonan contoh',
+              : 'Gagal hantar permohonan contoh ajeeee',
         ),
       ),
     );
@@ -79,7 +79,7 @@ class _LabHari4ScreenState extends State<LabHari4Screen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
+      appBar: AppBar(
         title: const Text('Lab Hari 4 — Tawaran eTT (API)'),
         actions: [
           IconButton(

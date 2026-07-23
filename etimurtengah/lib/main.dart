@@ -2,20 +2,10 @@
 import 'package:flutter/material.dart';
 
 import 'models/programme.dart';
-import 'data/sample_programmes.dart';
-import '../widgets/programme_banner.dart';
-import '../screens/layout_playground_screen.dart';
 import 'theme.dart';
-import 'widgets/programme_card.dart'; // guna semula CategoryPill
-import 'screens/home_screen.dart';
-import 'screens/programme_grid_screen.dart';
+// guna semula CategoryPill
 import 'screens/programme_detail_screen.dart';
 import 'widgets/lifecycle_demo.dart';
-import 'models/application.dart';
-import 'data/application.dart';
-import '../data/document_checklist.dart';
-import '../widgets/status_badge.dart';
-import '../services/programme_service.dart';
 import '../screens/lab_hari4_screen.dart';
 
 void main() {

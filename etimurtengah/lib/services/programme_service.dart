@@ -13,10 +13,15 @@ class ProgrammeService {
 
   final http.Client _client;
 
+  // PEMBETULAN 1: Seragamkan ejaan (gunakan 'u' kecil)
+  static const String _baseUrl =
+      'https://raw.githubusercontent.com/suzilawati77/api-mock-flutter/refs/heads/main/programmes.json';
+
   Future<List<Programme>> fetchProgrammes() async {
     try {
       final response = await _client
-          .get(Uri.parse(_baseURL))
+          // Guna _baseUrl yang telah dibetulkan
+          .get(Uri.parse(_baseUrl))
           .timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
@@ -31,14 +36,13 @@ class ProgrammeService {
     }
   }
 
-  static const String _baseURL =
-      'https://raw.githubusercontent.com/suzilawati77/api-mock-flutter/refs/heads/main/programmes.json';
-
   Future<bool> submitApplication(Application application) async {
     try {
       final response = await _client
           .post(
-            Uri.parse('$_baseUrl/applications'),
+            Uri.parse(
+              '$_baseUrl/applications',
+            ), // Sekarang padan dengan yang di atas
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode(application.toJson()),
           )
@@ -49,10 +53,11 @@ class ProgrammeService {
     }
   }
 
-  // Future<List<Programme>> _fallback() async {
-  //   await Future.delayed(const Duration(milliseconds: 600));
-  //   return sampleProgrammes;
-  // }
+  // PEMBETULAN 2: Buang komen (uncomment) fungsi ini
+  Future<List<Programme>> _fallback() async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    return sampleProgrammes;
+  }
 
   void dispose() => _client.close();
 }
