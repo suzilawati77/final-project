@@ -1,5 +1,6 @@
 // lib/main.dart — STATUS AKHIR HARI 1 (titik permulaan Hari 2)
 import 'package:flutter/material.dart';
+
 import 'models/programme.dart';
 import 'data/sample_programmes.dart';
 import '../widgets/programme_banner.dart';
@@ -12,9 +13,10 @@ import 'screens/programme_detail_screen.dart';
 import 'widgets/lifecycle_demo.dart';
 import 'models/application.dart';
 import 'data/application.dart';
-import 'data/document_checklist.dart';
-import 'widgets/status_badge.dart';
-
+import '../data/document_checklist.dart';
+import '../widgets/status_badge.dart';
+import '../services/programme_service.dart';
+import '../screens/lab_hari4_screen.dart';
 
 void main() {
   runApp(const LabHari1App());
@@ -29,8 +31,9 @@ class LabHari1App extends StatelessWidget {
       title: 'eTT Mobile — Latihan',
       debugShowCheckedModeBanner: false,
       theme: KptTheme.light,
-      home: const HomeScreen(),
-      // 👈 2.1 — TAMBAH onGenerateRoute SELEPAS BARIS INI
+      //home: const HomeScreen(),
+      home: const LabHari4Screen(),
+
       onGenerateRoute: (settings) {
         if (settings.name == '/detail') {
           final programme = settings.arguments as Programme;
