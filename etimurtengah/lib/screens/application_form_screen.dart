@@ -1,11 +1,11 @@
-// lib/screens/application_form_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import '../data/document_checklist.dart';
+import '../data/sample_programmes.dart';
 import '../models/application.dart';
 import '../models/programme.dart';
 import '../utils/validators.dart';
-import '../data/document_checklist.dart';
-import '../data/sample_programmes.dart';
 
 class ApplicationFormScreen extends StatefulWidget {
   const ApplicationFormScreen({super.key, required this.programme});
@@ -17,10 +17,8 @@ class ApplicationFormScreen extends StatefulWidget {
 }
 
 class _ApplicationFormScreenState extends State<ApplicationFormScreen> {
-  // ── 4.1 — Kunci borang ────────────────────────────
   final _formKey = GlobalKey<FormState>();
 
-  // ── 4.2 — Input Controller ─────────────────────────
   final _nameCtrl = TextEditingController();
   final _icCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
@@ -30,22 +28,31 @@ class _ApplicationFormScreenState extends State<ApplicationFormScreen> {
   final Map<String, bool> _documents = {};
 
   EntryCategory? _academicCategory;
-  late String _country; // 1 negara — peraturan eTT
-  late String _fieldOfStudy; // 1 bidang — peraturan eTT
+  late String _country;
+  late String _fieldOfStudy;
   String? _choice1;
   String? _choice2;
   String? _choice3;
 
   @override
   void initState() {
-    super.initState(); // WAJIB baris PERTAMA
-    // ── 4.7 — Nilai awal daripada tawaran yang dipilih ─
+    super.initState();
     _country = widget.programme.country;
     _fieldOfStudy = widget.programme.fieldOfStudy;
     _choice1 = widget.programme.id;
     for (final doc in ettDocumentChecklist) {
       _documents[doc] = false;
     }
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _icCtrl.dispose();
+    _emailCtrl.dispose();
+    _phoneCtrl.dispose();
+    _academicCtrl.dispose();
+    super.dispose();
   }
 
   List<String> get _countries =>
@@ -72,7 +79,7 @@ class _ApplicationFormScreenState extends State<ApplicationFormScreen> {
       _country = value;
       final fields = _fields;
       _fieldOfStudy = fields.isNotEmpty ? fields.first : '';
-      _resetChoices(); // pilihan universiti lama tidak lagi sah
+      _resetChoices();
     });
   }
 
@@ -91,27 +98,63 @@ class _ApplicationFormScreenState extends State<ApplicationFormScreen> {
     _choice3 = null;
   }
 
-  @override
-  void dispose() {
-    // ── 4.3 — Bersihkan setiap Controller ─────────────
-    _nameCtrl.dispose();
-    _icCtrl.dispose();
-    _emailCtrl.dispose();
-    _phoneCtrl.dispose();
-    _academicCtrl.dispose();
-    super.dispose(); // WAJIB baris TERAKHIR
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+    if (_academicCategory == null) {
+      _snack('Sila pilih kategori sijil (SPM atau STAM).');
+      return;
+    }
+    if (_choice1 == null) {
+      _snack('Sila pilih sekurang-kurangnya satu universiti (Pilihan 1).');
+      return;
+    }
+
+    final choices = <String>[];
+    for (final id in [_choice1, _choice2, _choice3]) {
+      if (id != null && !choices.contains(id)) choices.add(id);
+    }
+
+    final application = Application(
+      id: 'ETT-${DateTime.now().year}-${DateTime.now().millisecondsSinceEpoch}',
+      fullName: _nameCtrl.text.trim(),
+      icNumber: _icCtrl.text.trim(),
+      email: _emailCtrl.text.trim(),
+      phoneNumber: _phoneCtrl.text.trim(),
+      academicCategory: _academicCategory!,
+      academicSummary: _academicCtrl.text.trim(),
+      country: _country,
+      fieldOfStudy: _fieldOfStudy,
+      universityChoiceIds: choices,
+      uploadedDocuments: _documents.entries
+          .where((e) => e.value)
+          .map((e) => e.key)
+          .toList(),
+      status: ApplicationStatus.submitted,
+      submittedAt: DateTime.now(),
+    );
+
+    _snack('Permohonan ${application.id} berjaya dihantar!');
+    Navigator.of(context).pop(application);
+  }
+
+  void _snack(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
-    // SAYA TELAH UNCOMMENT BARIS INI SUPAYA PILIHAN 1, 2, 3 BERFUNGSI
     final choiceProgrammes = _choiceProgrammes;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Borang Permohonan eTT')),
       body: Form(
         key: _formKey,
-        // PENTING: SingleChildScrollView + Column, BUKAN ListView.
+        // PENTING: guna SingleChildScrollView + Column, BUKAN ListView.
+        // ListView bersifat "malas" — medan yang ditatal keluar skrin akan
+        // dilupuskan dan TERKELUAR daftar Form, menyebabkan validate()
+        // melangkau medan itu (borang kosong boleh "lulus" validation).
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -122,8 +165,6 @@ class _ApplicationFormScreenState extends State<ApplicationFormScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-
-              // ── 4.4 — Nama Penuh ──────────────────────
               TextFormField(
                 controller: _nameCtrl,
                 textCapitalization: TextCapitalization.words,
@@ -132,8 +173,6 @@ class _ApplicationFormScreenState extends State<ApplicationFormScreen> {
                     (v == null || v.trim().isEmpty) ? 'Nama diperlukan' : null,
               ),
               const SizedBox(height: 14),
-
-              // ── 4.5 — No. Kad Pengenalan ──────────────
               TextFormField(
                 controller: _icCtrl,
                 keyboardType: TextInputType.number,
@@ -147,8 +186,6 @@ class _ApplicationFormScreenState extends State<ApplicationFormScreen> {
                 validator: validateIcNumber,
               ),
               const SizedBox(height: 14),
-
-              // ── 4.6 — Emel, Telefon, Ringkasan Keputusan ──
               TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
@@ -172,19 +209,14 @@ class _ApplicationFormScreenState extends State<ApplicationFormScreen> {
                   labelText: 'Ringkasan Keputusan',
                   hintText: 'Cth: SPM 2025 — 9A',
                 ),
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'Ringkasan keputusan diperlukan'
-                    : null,
+                validator: validateAcademicSummary,
               ),
               const SizedBox(height: 24),
-
               const Text(
                 'Kelayakan & Pilihan Pengajian',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-
-              // ── 4.8 — Kategori Sijil ───────────────────
               DropdownButtonFormField<EntryCategory>(
                 initialValue: _academicCategory,
                 decoration: const InputDecoration(labelText: 'Kategori Sijil'),
@@ -203,15 +235,12 @@ class _ApplicationFormScreenState extends State<ApplicationFormScreen> {
                     v == null ? 'Sila pilih kategori sijil' : null,
               ),
               const SizedBox(height: 14),
-
               Text(
                 'Peraturan eTT: 1 negara + 1 bidang setiap permohonan. Anda '
                 'boleh menyusun sehingga 3 pilihan universiti dalam bidang itu.',
                 style: TextStyle(fontSize: 12, color: Colors.grey[700]),
               ),
               const SizedBox(height: 8),
-
-              // ── 4.10 — Negara & Bidang (saling bergantung) ─
               DropdownButtonFormField<String>(
                 initialValue: _country,
                 isExpanded: true,
@@ -244,14 +273,7 @@ class _ApplicationFormScreenState extends State<ApplicationFormScreen> {
                 onChanged: _onFieldChanged,
                 validator: (v) => v == null ? 'Sila pilih bidang' : null,
               ),
-
-
-
-
-
               const SizedBox(height: 14),
-
-              // ── 4.12 — Pilihan Universiti 1–3 ──────────
               _ChoiceDropdown(
                 label: 'Pilihan 1 (wajib)',
                 value: _choice1,
@@ -275,43 +297,41 @@ class _ApplicationFormScreenState extends State<ApplicationFormScreen> {
                 includeNone: true,
                 onChanged: (v) => setState(() => _choice3 = v),
               ),
-
-              // 👈 4.14 — TAMBAH senarai semak dokumen SELEPAS BARIS INI
-
-                          const SizedBox(height: 24),
-            const Text(
-              'Senarai Semak Dokumen',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Dalam sistem sebenar, dokumen dimuat naik selepas status LAYAK.',
-              style: TextStyle(fontSize: 12, color: Colors.grey[700]),
-            ),
-            const SizedBox(height: 8),
-
-            // ── 4.13 — Senarai semak dokumen ───────────
-            for (final doc in ettDocumentChecklist)
-              CheckboxListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                controlAffinity: ListTileControlAffinity.leading,
-                title: Text(doc),
-                value: _documents[doc],
-                onChanged: (v) => setState(() => _documents[doc] = v ?? false),
+              const SizedBox(height: 24),
+              const Text(
+                'Senarai Semak Dokumen',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-
-            // 👈 4.15 — TAMBAH butang Hantar SELEPAS BARIS INI
+              const SizedBox(height: 4),
+              Text(
+                'Dalam sistem sebenar, dokumen dimuat naik selepas status LAYAK.',
+                style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+              ),
+              const SizedBox(height: 8),
+              for (final doc in ettDocumentChecklist)
+                CheckboxListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  title: Text(doc),
+                  value: _documents[doc],
+                  onChanged: (v) =>
+                      setState(() => _documents[doc] = v ?? false),
+                ),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: _submit,
+                icon: const Icon(Icons.send),
+                label: const Text('Hantar Permohonan'),
+              ),
             ],
           ),
         ),
       ),
     );
   }
-} // PENUTUP KELAS _ApplicationFormScreenState
+}
 
-// ── 4.11 — Dropdown pilihan universiti (boleh guna semula) ─
-// KELAS INI MESTI BERADA DI LUAR (DI BAWAH SEKALI)
 class _ChoiceDropdown extends StatelessWidget {
   const _ChoiceDropdown({
     required this.label,
@@ -327,8 +347,6 @@ class _ChoiceDropdown extends StatelessWidget {
   final List<Programme> programmes;
   final ValueChanged<String?> onChanged;
   final String? Function(String?)? validator;
-
-  /// Jika benar, tambah item "Tiada" bernilai null (untuk pilihan opsional).
   final bool includeNone;
 
   @override

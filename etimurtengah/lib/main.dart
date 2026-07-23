@@ -9,6 +9,12 @@ import 'widgets/programme_card.dart'; // guna semula CategoryPill
 import 'screens/home_screen.dart';
 import 'screens/programme_grid_screen.dart';
 import 'screens/programme_detail_screen.dart';
+import 'widgets/lifecycle_demo.dart';
+import 'models/application.dart';
+import 'data/application.dart';
+import 'data/document_checklist.dart';
+import 'widgets/status_badge.dart';
+
 
 void main() {
   runApp(const LabHari1App());
@@ -32,6 +38,21 @@ class LabHari1App extends StatelessWidget {
             builder: (_) => ProgrammeDetailScreen(programme: programme),
           );
         }
+
+        if (settings.name == '/detail') {
+          // ... (Latihan 2.1, jangan ubah)
+        }
+
+        // 👇 Latihan 6 — laluan ujian untuk demo kitaran hayat
+        if (settings.name == '/lifecycle') {
+          return MaterialPageRoute(
+            builder: (_) => Scaffold(
+              appBar: AppBar(title: const Text('Demo Kitaran Hayat')),
+              body: const Center(child: LifecycleDemo()),
+            ),
+          );
+        }
+
         return null; // laluan tidak dikenali
       },
     );

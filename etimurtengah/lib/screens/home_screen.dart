@@ -11,42 +11,55 @@ class HomeScreen extends StatefulWidget {
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
-  
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   int _index = 0;
 
+  String? _countryFilter;
+
   static const _titles = ['Program', 'Permohonan Saya', 'Profil'];
-  static const _screens = [
-    ProgrammeListScreen(),
-    MyApplicationsScreen(),
-    ProfileScreen(),
-  ];
+
   void _selectCountry(String? country) {
-    // Buat masa ini: tutup Drawer sahaja. Tapisan sebenar memerlukan
-    // setState() + hantar data ke widget anak — itu Hari 3 (SESI 5).
+    setState(() => _countryFilter = country);
     Navigator.of(context).pop(); // tutup Drawer
   }
+
   @override
   Widget build(BuildContext context) {
+    final screens = [
+      ProgrammeListScreen(countryFilter: _countryFilter),
+      const MyApplicationsScreen(),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
       appBar: AppBar(title: Text('eTT Mobile · ${_titles[_index]}')),
-      body: _screens[_index],
+      drawer: _CountryDrawer(onSelect: _selectCountry),
+      body: screens[_index],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,
         onTap: (i) => setState(() => _index = i),
         type: BottomNavigationBarType.fixed,
         selectedItemColor: KptTheme.navy,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.school_outlined), label: 'Program'),
-          BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), label: 'Permohonan Saya'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profil'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.school_outlined),
+            label: 'Program',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.assignment_outlined),
+            label: 'Permohonan Saya',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Profil',
+          ),
         ],
       ),
 
       // 👈 5.3 — TAMBAH drawer: SELEPAS bottomNavigationBar
-      drawer: _CountryDrawer(onSelect: _selectCountry),
+      //drawer: _CountryDrawer(onSelect: _selectCountry),
     );
   }
 }
@@ -82,7 +95,11 @@ class _CountryDrawer extends StatelessWidget {
               children: [
                 Text(
                   'eTT Mobile',
-                  style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 SizedBox(height: 4),
                 Text(
@@ -98,6 +115,17 @@ class _CountryDrawer extends StatelessWidget {
               title: Text(option.label),
               onTap: () => onSelect(option.value),
             ),
+
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.science_outlined, color: KptTheme.navy),
+            title: const Text('Demo Kitaran Hayat'),
+            subtitle: const Text('Lihat log initState / build / dispose'),
+            onTap: () {
+              Navigator.of(context).pop(); // tutup Drawer dahulu
+              Navigator.of(context).pushNamed('/lifecycle');
+            },
+          ),
         ],
       ),
     );

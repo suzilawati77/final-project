@@ -84,3 +84,15 @@ String? validatePhoneNumber(String? value) {
   }
   return null;
 }
+
+/// Pengesah medan "Ringkasan Keputusan".
+///
+/// Padanan tandatangan `String? Function(String?)` yang diperlukan
+/// oleh `TextFormField.validator`.
+/// Mengembalikan `null` jika sah, atau mesej ralat jika tidak.
+String? validateAcademicSummary(String? value) {
+  if (value == null || value.trim().isEmpty) {
+    return 'Ringkasan keputusan SPM/STAM diperlukan';
+  }
+  return null;
+}
